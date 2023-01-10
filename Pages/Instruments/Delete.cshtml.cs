@@ -1,0 +1,66 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using Inchiriere_Instrumente.Data;
+using Inchiriere_Instrumente.Models;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
+
+namespace Inchiriere_Instrumente.Pages.Instruments
+{
+    [Authorize(Roles = "Admin")]
+    public class DeleteModel : PageModel
+    {
+        private readonly Inchiriere_Instrumente.Data.Inchiriere_InstrumenteContext _context;
+
+        public DeleteModel(Inchiriere_Instrumente.Data.Inchiriere_InstrumenteContext context)
+        {
+            _context = context;
+        }
+
+        [BindProperty]
+      public Instrument Instrument { get; set; }
+
+        public async Task<IActionResult> OnGetAsync(int? id)
+        {
+            if (id == null || _context.Instrument == null)
+            {
+                return NotFound();
+            }
+
+            var instrument = await _context.Instrument.FirstOrDefaultAsync(m => m.ID == id);
+
+            if (instrument == null)
+            {
+                return NotFound();
+            }
+            else 
+            {
+                Instrument = instrument;
+            }
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync(int? id)
+        {
+            if (id == null || _context.Instrument == null)
+            {
+                return NotFound();
+            }
+            var instrument = await _context.Instrument.FindAsync(id);
+
+            if (instrument != null)
+            {
+                Instrument = instrument;
+                _context.Instrument.Remove(Instrument);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToPage("./Index");
+        }
+    }
+}
